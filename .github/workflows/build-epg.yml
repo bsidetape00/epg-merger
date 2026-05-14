@@ -2,8 +2,8 @@ name: Build EPG
 
 on:
   schedule:
-    - cron: "0 */6 * * *"   # every 6 hours
-  workflow_dispatch:         # lets you run it manually from the Actions tab
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
@@ -25,6 +25,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -47,7 +49,18 @@ jobs:
           git add combined.xml.gz
           if git diff --staged --quiet; then
             echo "No EPG changes. Nothing to commit."
-          else
-            git commit -m "EPG refresh $(date -u +'%Y-%m-%d %H:%M UTC')"
-            git push
+            exit 0
           fi
+          git commit -m "EPG refresh $(date -u +'%Y-%m-%d %H:%M UTC')"
+          for attempt in 1 2 3 4 5; do
+            if git push; then
+              echo "Push succeeded on attempt $attempt"
+              exit 0
+            fi
+            echo "Push attempt $attempt failed. Rebasing on origin/main and retrying."
+            git fetch origin main
+            git rebase origin/main || { echo "Rebase failed"; exit 1; }
+            sleep 3
+          done
+          echo "Push still failing after 5 attempts."
+          exit 1
