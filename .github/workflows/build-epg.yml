@@ -1,0 +1,53 @@
+name: Build EPG
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"   # every 6 hours
+  workflow_dispatch:         # lets you run it manually from the Actions tab
+  push:
+    branches: [main]
+    paths:
+      - "merge.py"
+      - ".github/workflows/build-epg.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-epg
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install lxml
+        run: pip install lxml
+
+      - name: Run merge
+        run: python merge.py
+
+      - name: Show file size
+        run: ls -lh combined.xml.gz
+
+      - name: Commit if changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add combined.xml.gz
+          if git diff --staged --quiet; then
+            echo "No EPG changes. Nothing to commit."
+          else
+            git commit -m "EPG refresh $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git push
+          fi
