@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Business HQ</title>
-<meta name="description" content="Your business hub: CRM, invoicing nudges, travel & fuel log.">
+<meta name="description" content="Your business workspace: CRM, tasks, docs, calendar, invoicing and travel log.">
 <meta name="theme-color" content="#3730a3">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="styles.css">
@@ -22,14 +22,38 @@
       <span class="brand-mark">HQ</span>
       <span class="brand-name">Business HQ</span>
     </div>
+    <button class="side-search" onclick="App.openPalette('')">
+      <span>🔍</span><span class="grow">Search…</span><kbd>⌘K</kbd>
+    </button>
     <nav id="nav"></nav>
-    <div class="sidebar-foot">Data lives on this device.<br>Back up in Settings.</div>
+    <div class="sidebar-foot">Data lives on this device.<br>Back up in Settings. Press <kbd>?</kbd> for shortcuts.</div>
   </aside>
-  <main id="main" aria-live="polite"></main>
+  <div id="content">
+    <header id="topbar">
+      <span class="brand-mark">HQ</span>
+      <span class="tb-title">Business HQ</span>
+      <button onclick="App.openPalette('')" aria-label="Search">🔍</button>
+      <button class="btn-primary" onclick="App.openPalette('')" aria-label="Quick add">＋</button>
+    </header>
+    <main id="main" aria-live="polite"></main>
+  </div>
   <nav id="tabbar"></nav>
 </div>
+<div id="palette-root"></div>
 <div id="modal-root"></div>
 <div id="print-area"></div>
-<script src="app.js"></script>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="js/core.js"></script>
+<script src="js/crm.js"></script>
+<script src="js/tasks.js"></script>
+<script src="js/docs.js"></script>
+<script src="js/calendar.js"></script>
+<script src="js/money.js"></script>
+<script src="js/trips.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/home.js"></script>
+<script src="js/palette.js"></script>
+<script src="js/boot.js"></script>
 </body>
 </html>

@@ -1,10 +1,20 @@
 /* Business HQ service worker — cache app shell for offline use */
-const CACHE = "bizhq-v1";
+const CACHE = "bizhq-v2";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
-  "./app.js",
+  "./js/core.js",
+  "./js/crm.js",
+  "./js/tasks.js",
+  "./js/docs.js",
+  "./js/calendar.js",
+  "./js/money.js",
+  "./js/trips.js",
+  "./js/settings.js",
+  "./js/home.js",
+  "./js/palette.js",
+  "./js/boot.js",
   "./manifest.webmanifest",
   "./icons/icon.svg",
   "./icons/icon-192.png",
