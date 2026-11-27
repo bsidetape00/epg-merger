@@ -17,6 +17,7 @@ Inspired by the "one connected workspace instead of a dozen apps" idea behind [m
 | **Trips & fuel** | Trip log with business/personal tagging, fuel log, per-km deduction estimate for the financial year, **GOFAR CSV import**, and **auto-tagging**: trips on a route you've already categorised (either direction) are tagged for you. |
 | **Search & quick add** | `⌘K` / `Ctrl+K` (or `/`) searches everything and takes plain-English commands — see below. |
 | **Themes** | Auto, Paper, Indigo, Graphite, Void (OLED black), Ember, Forest. |
+| **Sample data** | Settings → *Load sample data* fills every screen with clearly-marked example records so you can try it; *Remove sample data* deletes only those, never your own. |
 
 ### Quick add (⌘K)
 

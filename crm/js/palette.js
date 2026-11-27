@@ -19,6 +19,7 @@ function paletteActions() {
     A("⛽️", "Add fuel", () => App.editFuel(), "petrol receipt"),
     A("⬆", "Import GOFAR trips (CSV)", () => { App.go("#/trips"); setTimeout(() => App.gofarImport(), 50); }, "gofar csv logbook"),
     A("✨", "Auto-tag trips from past routes", () => App.autotagTrips(), "categorise business personal"),
+    A("🧪", "Load sample data", () => App.loadSample(), "demo example try"),
     A("⬇", "Export backup", () => App.exportData(), "download save"),
     A("🗓", "Export calendar (.ics)", () => App.exportIcs(), "apple calendar"),
   ];

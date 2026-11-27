@@ -68,6 +68,15 @@ function renderSettings() {
     </div>
 
     <div class="card">
+      <h2 style="margin-top:0">Try it with sample data</h2>
+      <p class="small muted">Adds a few made-up clients, invoices, tasks, a doc, a pipeline and trips so you can see every screen working. Everything added is marked as a sample and can be removed in one click without touching your real records.</p>
+      <div class="actions">
+        <button class="btn-primary" onclick="App.loadSample()">Load sample data</button>
+        <button onclick="App.clearSample()" ${hasSample() ? "" : "disabled"}>Remove sample data${hasSample() ? "" : " (none loaded)"}</button>
+      </div>
+    </div>
+
+    <div class="card">
       <h2 style="margin-top:0">Backup &amp; move between devices</h2>
       <p class="small muted">Data lives in this browser only. Export a backup file regularly, keep it in iCloud Drive, and import it on your other devices to bring them up to date. Your .ics calendar export is on the Calendar page.</p>
       <div class="actions">
@@ -135,4 +144,61 @@ function wipe() {
   save(); render();
 }
 
-Object.assign(App, { setTheme, saveSettings, exportData, importDataPick, importData, wipe });
+/* ----- sample data: every record carries sample:true so it can be removed cleanly ----- */
+const LISTS = ["clients", "work", "invoices", "trips", "fuel", "tasks", "docs", "deals", "activities", "events"];
+const hasSample = () => LISTS.some((k) => DB[k].some((x) => x.sample));
+function loadSample() {
+  if (hasSample() && !confirm("Sample data is already loaded. Add another copy?")) return;
+  const t = today(), d = (n) => addDays(t, n), S = (o) => Object.assign({ id: uid(), sample: true }, o);
+  const sarah = S({ name: "Sarah Chen", company: "Chen Electrical", email: "sarah@chenelectrical.example", phone: "0400 111 222", notes: "Prefers email. Pays on time.", createdAt: d(-40) });
+  const marcus = S({ name: "Marcus Webb", company: "Webb Plumbing", email: "marcus@webbplumbing.example", phone: "0400 333 444", notes: "", createdAt: d(-60) });
+  const priya = S({ name: "Priya Nair", company: "Nair Dental", email: "priya@nairdental.example", phone: "0400 555 666", notes: "", createdAt: d(-20) });
+  DB.clients.push(sarah, marcus, priya);
+  const rate = DB.settings.hourlyRate || 110;
+
+  DB.work.push(
+    S({ clientId: sarah.id, date: d(-10), desc: "Switchboard site visit and quote", hours: 3, rate, invoiceId: null }),
+    S({ clientId: sarah.id, date: d(-9), desc: "Load calculations", hours: 1.5, rate, invoiceId: null }),
+    S({ clientId: priya.id, date: d(-3), desc: "Initial consult", hours: 2, rate, invoiceId: null }));
+
+  const num = () => { const n = nextInvoiceNumber(); DB.settings.nextInvoiceNumber++; return n; };
+  DB.invoices.push(
+    S({ number: num(), clientId: marcus.id, issueDate: d(-20), dueDate: d(-6), status: "sent", notes: "", items: [{ desc: "Bathroom rough-in electrical", qty: 8, unit: rate }, { desc: "Materials", qty: 1, unit: 340 }] }),
+    S({ number: num(), clientId: priya.id, issueDate: d(-5), dueDate: d(9), status: "draft", notes: "", items: [{ desc: "Scoping workshop", qty: 2, unit: rate }] }));
+
+  DB.deals.push(
+    S({ clientId: sarah.id, title: "Switchboard upgrade", value: 4200, stage: "quoted", createdAt: d(-9) }),
+    S({ clientId: marcus.id, title: "Bathroom renovation", value: 12800, stage: "active", createdAt: d(-30) }),
+    S({ clientId: priya.id, title: "Clinic fit-out", value: 6500, stage: "lead", createdAt: d(-3) }));
+
+  DB.tasks.push(
+    S({ title: "Call Sarah about the quote", status: "todo", priority: 1, due: t, clientId: sarah.id, notes: "", recur: "", createdAt: d(-2), doneAt: null, ref: "client:" + sarah.id }),
+    S({ title: "Order cable for Webb job", status: "doing", priority: 2, due: d(1), clientId: marcus.id, notes: "", recur: "", createdAt: d(-4), doneAt: null, ref: null }),
+    S({ title: "Lodge BAS", status: "todo", priority: 2, due: d(12), clientId: null, notes: "", recur: "quarterly", createdAt: d(-30), doneAt: null, ref: null }),
+    S({ title: "Send Priya the scope outline", status: "todo", priority: 3, due: d(-1), clientId: priya.id, notes: "", recur: "", createdAt: d(-3), doneAt: null, ref: null }));
+
+  DB.events.push(S({ title: "Site visit — Webb Plumbing", date: d(1), start: "09:30", end: "11:00", clientId: marcus.id }));
+  DB.activities.push(S({ clientId: priya.id, type: "call", text: "Wants a fixed price, not hourly", date: d(-3) }));
+
+  const now = new Date().toISOString();
+  DB.docs.push(S({ title: "Quote — Chen Electrical", clientId: sarah.id, createdAt: now, updatedAt: now, versions: [],
+    body: `# Quote for Sarah Chen\n\nDate: ${fmtDate(t)}\nValid for: 30 days\n\n## Scope of work\n- Replace main switchboard with 12-circuit RCD board\n- Test and tag all circuits\n\n## Pricing\n- Labour — 12h\n- Materials — board, breakers, cable\n\n**Total:** $4,200 + GST\n\n## Next steps\n- [ ] Sarah to confirm by Friday\n- [x] Site visit done\n\nSee @[Sarah Chen](client:${sarah.id}) for contact details.\n` }));
+
+  DB.trips.push(
+    S({ date: d(-6), km: 23.4, from: "Home", to: "Chen Electrical", purpose: "business", clientId: sarah.id, source: "manual", notes: "" }),
+    S({ date: d(-6), km: 23.7, from: "Chen Electrical", to: "Home", purpose: "uncategorised", clientId: null, source: "gofar", notes: "" }),
+    S({ date: d(-4), km: 8.1, from: "Home", to: "Bunnings", purpose: "personal", clientId: null, source: "manual", notes: "" }));
+  DB.fuel.push(S({ date: d(-5), cost: 92.5, litres: 48.2, odometer: 84210, station: "Ampol Penrith" }));
+
+  save(); render(); toast("Sample data loaded. Remove it anytime in Settings.");
+}
+function clearSample() {
+  if (!hasSample()) return;
+  if (!confirm("Remove all sample records? Your own data is not touched.")) return;
+  for (const k of LISTS) DB[k] = DB[k].filter((x) => !x.sample);
+  for (const x of [...DB.work, ...DB.trips]) if (x.invoiceId && !DB.invoices.some((i) => i.id === x.invoiceId)) x.invoiceId = null;
+  DB.snoozed = {};
+  save(); render(); toast("Sample data removed");
+}
+
+Object.assign(App, { setTheme, saveSettings, exportData, importDataPick, importData, wipe, loadSample, clearSample });
